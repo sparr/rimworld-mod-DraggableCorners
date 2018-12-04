@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+	<name>Draggable Corners</name>
+	<author>Sparr</author>
+	<targetVersion>1.0.2096</targetVersion>
+	<description>Allows dragging L shapes instead of just straight lines when building walls, conduits, sandbags, etc.</description>
+	<url>https://github.com/sparr/rimworld-mod-DraggableCorners</url>
+</ModMetaData>
