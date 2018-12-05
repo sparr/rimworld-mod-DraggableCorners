@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Harmony;
+using RimWorld;
 using Verse;
 
 namespace DraggableCorners
@@ -61,6 +62,19 @@ namespace DraggableCorners
             }
 
             IntVec3 cur = beg;
+            bool drawRectangle = false;
+            Designator selDes = Find.DesignatorManager.SelectedDesignator;
+            if (selDes is Designator_Build des)
+            {
+                if (des.PlacingDef is ThingDef def)
+                {
+                    drawRectangle =
+                    (
+                        (def.passability == Traversability.Impassable) &&
+                        (def.category == ThingCategory.Building)
+                    );
+                }
+            }
             void drawSegment(ref int curCoord, int endCoord)
             {
                 while (curCoord != endCoord)
@@ -70,14 +84,30 @@ namespace DraggableCorners
                     DesignationDragger_TryAddDragCell_Action(DD, cur);
                 }
             }
-            if (initialDragAxis == 0)
+            if (drawRectangle)
             {
                 drawSegment(ref cur.x, end.x);
-                drawSegment(ref cur.z, end.z);
-            } else
+                if (end.z != beg.z)
+                {
+                    drawSegment(ref cur.z, end.z);
+                    if (end.x != beg.x)
+                    {
+                        drawSegment(ref cur.x, beg.x);
+                        drawSegment(ref cur.z, beg.z + (cur.z > beg.z ? 1 : -1)); // don't draw beg again
+                    }
+                }
+            }
+            else
             {
-                drawSegment(ref cur.z, end.z);
-                drawSegment(ref cur.x, end.x);
+                if (initialDragAxis == 0)
+                {
+                    drawSegment(ref cur.x, end.x);
+                    drawSegment(ref cur.z, end.z);
+                } else
+                {
+                    drawSegment(ref cur.z, end.z);
+                    drawSegment(ref cur.x, end.x);
+                }
             }
         }
 
