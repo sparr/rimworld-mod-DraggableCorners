@@ -12,24 +12,39 @@ namespace DraggableCorners
     static class DraggableCorners
     {
         public static int initialDragAxis = -1;
+        public static Action<DesignationDragger, IntVec3> DesignationDragger_TryAddDragCell_Action =
+            (Action<DesignationDragger, IntVec3>)Delegate
+                .CreateDelegate(typeof(Action<DesignationDragger, IntVec3>), null,
+                    typeof(DesignationDragger).GetMethod("TryAddDragCell",
+                        BindingFlags.NonPublic | BindingFlags.Instance));
+
+        public static Func<DesignationDragger, IntVec3> DesignationDragger_startDragCell_Getter;
 
         static DraggableCorners()
         {
+            var field = typeof(DesignationDragger).GetField("startDragCell",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            string methodName = field.ReflectedType.FullName + ".get_" + field.Name;
+            DynamicMethod getterMethod =
+                new DynamicMethod(methodName, typeof(IntVec3), new[] { typeof(DesignationDragger) }, true);
+            ILGenerator gen = getterMethod.GetILGenerator();
+            gen.Emit(OpCodes.Ldarg_0);
+            gen.Emit(OpCodes.Ldfld, field);
+            gen.Emit(OpCodes.Ret);
+            DesignationDragger_startDragCell_Getter =
+                (Func<DesignationDragger, IntVec3>)getterMethod.CreateDelegate(
+                    typeof(Func<DesignationDragger, IntVec3>));
+
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.sparr.draggablecorners");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
 
         public static void DrawDesignationCorners(DesignationDragger DD) {
             // IntVec3 beg = DD.startDragCell;
-            IntVec3 beg = (IntVec3)typeof(DesignationDragger)
-            .GetField("startDragCell", BindingFlags.NonPublic | BindingFlags.Instance)
-            .GetValue(DD);
-
-            MethodInfo DesignationDragger_TryAddDragCell = typeof(DesignationDragger)
-            .GetMethod("TryAddDragCell", BindingFlags.NonPublic | BindingFlags.Instance);
+            IntVec3 beg = DesignationDragger_startDragCell_Getter(DD);
 
             // DD.TryAddDragCell(beg);
-            DesignationDragger_TryAddDragCell.Invoke(DD, new object[] { beg });
+            DesignationDragger_TryAddDragCell_Action(DD, beg);
 
             IntVec3 end = UI.MouseCell();
             if (beg == end)
@@ -52,7 +67,7 @@ namespace DraggableCorners
                 {
                     curCoord += Math.Sign(endCoord - curCoord);
                     // DD.TryAddDragCell(cur);
-                    DesignationDragger_TryAddDragCell.Invoke(DD, new object[] { cur });
+                    DesignationDragger_TryAddDragCell_Action(DD, cur);
                 }
             }
             if (initialDragAxis == 0)
