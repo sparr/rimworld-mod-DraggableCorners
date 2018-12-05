@@ -110,8 +110,8 @@ namespace DraggableCorners
                     blockPastEnd = j;
                     // replace contents of if{} with a call to DraggableCorners.DrawDesignationCorners(this)
                     codes.RemoveRange(blockBegin, blockPastEnd - blockBegin);
-                    codes.Insert(blockBegin  , new CodeInstruction(opcode: OpCodes.Ldarg_0));
-                    codes.Insert(blockBegin+1, new CodeInstruction(opcode: OpCodes.Call, operand: typeof(DraggableCorners).GetMethod(nameof(DraggableCorners.DrawDesignationCorners))));
+                    codes.Insert(blockBegin++, new CodeInstruction(opcode: OpCodes.Ldarg_0));
+                    codes.Insert(blockBegin++, new CodeInstruction(opcode: OpCodes.Call, operand: typeof(DraggableCorners).GetMethod(nameof(DraggableCorners.DrawDesignationCorners))));
                 }
             }
             return codes.AsEnumerable();
