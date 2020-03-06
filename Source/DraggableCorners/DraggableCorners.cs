@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using Harmony;
+using HarmonyLib;
 using RimWorld;
 using Verse;
 
@@ -36,7 +36,7 @@ namespace DraggableCorners
                 (Func<DesignationDragger, IntVec3>)getterMethod.CreateDelegate(
                     typeof(Func<DesignationDragger, IntVec3>));
 
-            HarmonyInstance harmony = HarmonyInstance.Create("rimworld.sparr.draggablecorners");
+            Harmony harmony = new Harmony("rimworld.sparr.draggablecorners");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
 
